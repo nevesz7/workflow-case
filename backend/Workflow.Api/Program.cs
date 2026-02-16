@@ -1,13 +1,15 @@
 using Dapper;
 using Npgsql;
 using Workflow.Api.Data;
+using Workflow.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+SqlMapper.AddTypeHandler(new StringEnumHandler<UserRole>());
+SqlMapper.AddTypeHandler(new StringEnumHandler<RequestPriority>());
+SqlMapper.AddTypeHandler(new StringEnumHandler<RequestStatus>());
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -23,7 +25,6 @@ catch (Exception ex)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

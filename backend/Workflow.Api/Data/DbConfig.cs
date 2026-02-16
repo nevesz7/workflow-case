@@ -26,7 +26,7 @@ public static class DbConfig
                 Id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 Username VARCHAR(50) NOT NULL UNIQUE,
                 PasswordHash TEXT NOT NULL,
-                Role VARCHAR(20) NOT NULL CHECK (Role IN ('User', 'Manager'))
+                Role VARCHAR(20) NOT NULL DEFAULT 'User'
             );
 
             CREATE TABLE IF NOT EXISTS Requests (
@@ -34,7 +34,7 @@ public static class DbConfig
                 Title VARCHAR(100) NOT NULL,
                 Description TEXT,
                 Category VARCHAR(50),
-                Priority INT DEFAULT 1,
+                Priority VARCHAR(20) DEFAULT 'Medium',
                 Status VARCHAR(20) DEFAULT 'Pending',
                 UserId UUID REFERENCES Users(Id),
                 CreatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
