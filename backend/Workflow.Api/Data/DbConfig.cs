@@ -27,6 +27,7 @@ public static class DbConfig
                 Username VARCHAR(50) NOT NULL UNIQUE,
                 PasswordHash TEXT NOT NULL,
                 Role VARCHAR(20) NOT NULL CHECK (Role IN ('User', 'Manager'))
+                Role VARCHAR(20) NOT NULL DEFAULT 'User'
             );
 
             CREATE TABLE IF NOT EXISTS Requests (
@@ -35,6 +36,7 @@ public static class DbConfig
                 Description TEXT,
                 Category VARCHAR(50),
                 Priority INT DEFAULT 1,
+                Priority VARCHAR(20) DEFAULT 'Medium',
                 Status VARCHAR(20) DEFAULT 'Pending',
                 UserId UUID REFERENCES Users(Id),
                 CreatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -61,9 +63,22 @@ public static class DbConfig
         if (!userExists)
         {
             var seedSql = @"
+                -- Insert Users
                 INSERT INTO Users (Username, PasswordHash, Role) VALUES 
                 ('colaborador_comum', 'hash_senha_123', 'User'),
                 ('gerente_sistema', 'hash_senha_456', 'Manager');";
+                ('ana_silva', 'senha_user_2', 'User'),
+                ('joao_santos', 'senha_user_3', 'User'),
+                ('gerente_sistema', 'hash_senha_456', 'Manager'),
+                ('mariana_gerente', 'senha_manager_2', 'Manager');
+
+                -- Insert Requests
+                INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) VALUES 
+                ('Impressora com defeito', 'A impressora do 2º andar está atolando papel.', 'Hardware', 'Medium', 'Pending', (SELECT Id FROM Users WHERE Username = 'colaborador_comum')),
+                ('Acesso VPN', 'Solicito acesso à VPN para trabalho remoto.', 'Acesso', 'High', 'InProgress', (SELECT Id FROM Users WHERE Username = 'ana_silva')),
+                ('Monitor piscando', 'O monitor secundário apaga de vez em quando.', 'Hardware', 'Low', 'Pending', (SELECT Id FROM Users WHERE Username = 'joao_santos')),
+                ('Erro no sistema ERP', 'Erro 500 ao tentar gerar relatório mensal.', 'Software', 'High', 'Pending', (SELECT Id FROM Users WHERE Username = 'colaborador_comum')),
+                ('Instalação do Docker', 'Preciso do Docker instalado para o novo projeto.', 'Software', 'Medium', 'Approved', (SELECT Id FROM Users WHERE Username = 'ana_silva'));";
             
             connection.Execute(seedSql);
         }
