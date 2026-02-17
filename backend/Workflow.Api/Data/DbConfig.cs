@@ -75,12 +75,69 @@ public static class DbConfig
         if (!requestExists)
         {
             var requestSql = @"
-                INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) VALUES 
-                ('Impressora com defeito', 'A impressora do 2º andar está atolando papel.', 'Hardware', 'Medium', 'Pending', (SELECT Id FROM Users WHERE Username = 'colaborador_comum')),
-                ('Acesso VPN', 'Solicito acesso à VPN para trabalho remoto.', 'Acesso', 'High', 'Rejected', (SELECT Id FROM Users WHERE Username = 'ana_silva')),
-                ('Monitor piscando', 'O monitor secundário apaga de vez em quando.', 'Hardware', 'Low', 'Pending', (SELECT Id FROM Users WHERE Username = 'joao_santos')),
-                ('Erro no sistema ERP', 'Erro 500 ao tentar gerar relatório mensal.', 'Software', 'High', 'Pending', (SELECT Id FROM Users WHERE Username = 'colaborador_comum')),
-                ('Instalação do Docker', 'Preciso do Docker instalado para o novo projeto.', 'Software', 'Medium', 'Approved', (SELECT Id FROM Users WHERE Username = 'ana_silva'));";
+                DO $$
+                DECLARE
+                    v_user_colab UUID;
+                    v_user_ana UUID;
+                    v_user_joao UUID;
+                    v_manager UUID;
+                    v_req_id UUID;
+                BEGIN
+                    SELECT Id INTO v_user_colab FROM Users WHERE Username = 'colaborador_comum';
+                    SELECT Id INTO v_user_ana FROM Users WHERE Username = 'ana_silva';
+                    SELECT Id INTO v_user_joao FROM Users WHERE Username = 'joao_santos';
+                    SELECT Id INTO v_manager FROM Users WHERE Username = 'gerente_sistema';
+
+                    -- 1. Impressora
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
+                    VALUES ('Impressora com defeito', 'A impressora do 2º andar está atolando papel.', 'Hardware', 'Medium', 'Pending', v_user_colab)
+                    RETURNING Id INTO v_req_id;
+                    
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_colab, NOW(), 'Solicitação criada via seed.');
+
+                    -- 2. VPN
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId, CreatedAt, UpdatedAt) 
+                    VALUES ('Acesso VPN', 'Solicito acesso à VPN para trabalho remoto.', 'Acesso', 'High', 'Rejected', v_user_ana, NOW() - INTERVAL '1 day', NOW())
+                    RETURNING Id INTO v_req_id;
+
+                    -- History 1: Creation (User)
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_ana, NOW() - INTERVAL '1 day', 'Solicitação criada via seed.');
+
+                    -- History 2: Update (Manager)
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, 'Pending', 'Rejected', v_manager, NOW(), 'Rejeitado pelo gerente.');
+
+                    -- 3. Monitor
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
+                    VALUES ('Monitor piscando', 'O monitor secundário apaga de vez em quando.', 'Hardware', 'Low', 'Pending', v_user_joao)
+                    RETURNING Id INTO v_req_id;
+
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_joao, NOW(), 'Solicitação criada via seed.');
+
+                    -- 4. ERP
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
+                    VALUES ('Erro no sistema ERP', 'Erro 500 ao tentar gerar relatório mensal.', 'Software', 'High', 'Pending', v_user_colab)
+                    RETURNING Id INTO v_req_id;
+
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_colab, NOW(), 'Solicitação criada via seed.');
+
+                    -- 5. Docker
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId, CreatedAt, UpdatedAt) 
+                    VALUES ('Instalação do Docker', 'Preciso do Docker instalado para o novo projeto.', 'Software', 'Medium', 'Approved', v_user_ana, NOW() - INTERVAL '2 days', NOW())
+                    RETURNING Id INTO v_req_id;
+
+                    -- History 1: Creation (User)
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_ana, NOW() - INTERVAL '2 days', 'Solicitação criada via seed.');
+
+                    -- History 2: Update (Manager)
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, 'Pending', 'Approved', v_manager, NOW(), 'Aprovado pelo gerente.');
+                END $$;";
             
             connection.Execute(requestSql);
         }
