@@ -43,8 +43,15 @@ public class RequestsController : ControllerBase
     {
         if (!TryGetUserContext(out var userId, out _)) return Unauthorized("Missing X-User-Id or X-Role headers.");
 
-        var created = await _service.CreateAsync(dto, userId);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _service.CreateAsync(dto, userId);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (ArgumentException)
+        {
+            return BadRequest("Invalid data provided (e.g., invalid Priority).");
+        }
     }
 
     // POST: api/requests/{id}/approve

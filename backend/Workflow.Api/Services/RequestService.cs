@@ -39,7 +39,7 @@ public class RequestService : IRequestService
             Title = dto.Title,
             Description = dto.Description,
             Category = dto.Category,
-            Priority = Enum.Parse<RequestPriority>(dto.Priority),
+            Priority = Enum.Parse<RequestPriority>(dto.Priority, true),
             Status = RequestStatus.Pending, // Workflow: Sempre inicia como Pending
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
