@@ -48,30 +48,32 @@ Se o seu banco de dados não estiver rodando em `localhost:5432` ou se as creden
 
 ### 2. Configurar a URL da API (Frontend)
 
-O frontend precisa saber o endereço de rede do backend.
+O frontend precisa saber o endereço de rede onde o backend está rodando. Esta configuração é gerenciada pelos arquivos de ambiente do Angular, localizados em `frontend/src/environments/`.
 
-**a. Encontre o Endereço IP do Backend:**
-Na máquina onde o backend (.NET) está rodando, abra um terminal e descubra o endereço IP da sua rede local:
-- **No Windows:**
-  ```bash
-  ipconfig
+**a. Para Desenvolvimento Local:**
+Edite o arquivo `frontend/src/environments/environment.development.ts`.
+
+Por padrão, ele aponta para `localhost`. Se o seu backend estiver rodando em outra máquina na mesma rede, você precisará encontrar o endereço IP daquela máquina e atualizar a URL.
+
+- **Para encontrar o IP (na máquina do backend):**
+  - **Windows:** `ipconfig` (procure por "Endereço IPv4")
+  - **Linux/macOS:** `ip addr` (procure por "inet")
+
+- **Exemplo de atualização:**
+  ```typescript
+  export const environment = {
+    production: false,
+    // Substitua 'localhost' pelo IP da máquina do backend, se necessário
+    apiUrl: 'http://192.168.1.15:5166/api' 
+  };
   ```
-  Procure pelo "Endereço IPv4" (geralmente algo como `192.168.x.x`).
-- **No Linux ou macOS:**
-  ```bash
-  ip addr
-  ```
-  Procure pelo endereço `inet` da sua interface de rede principal (ex: `eth0` ou `wlan0`).
 
-**b. Atualize o Ambiente do Frontend:**
-Abra o arquivo de ambiente de desenvolvimento do Angular:
-`frontend/src/environments/environment.development.ts`
-
-Atualize a propriedade `apiUrl` com o IP e a porta que você encontrou. Por exemplo:
+**b. Para Produção:**
+Quando for fazer o deploy da aplicação, edite o arquivo `frontend/src/environments/environment.ts` com o domínio ou IP do seu servidor de produção.
 ```typescript
 export const environment = {
-  production: false,
-  apiUrl: 'http://192.168.1.15:5166/api' // Substitua pelo IP e porta corretos
+  production: true,
+  apiUrl: 'https://sua-api-em-producao.com/api'
 };
 ```
 
