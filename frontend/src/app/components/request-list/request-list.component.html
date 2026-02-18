@@ -1,0 +1,61 @@
+<div class="container">
+  <header class="page-header">
+    <h2>Request Workflow</h2>
+    <div class="user-info" *ngIf="currentUser">
+      <span>Logged in as: <strong>{{ currentUser.name }}</strong> ({{ currentUser.role }})</span>
+      <button class="btn btn-outline" (click)="authService.logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="actions-bar">
+    <div class="filter-group">
+      <label for="statusFilter">Filter by Status:</label>
+      <select id="statusFilter" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+        <option value="">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div>
+
+    <!-- Only Users can create new requests -->
+    <button *ngIf="currentUser?.role === 'User'" class="btn btn-primary" routerLink="/requests/new">
+      + New Request
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of requests">
+          <td>{{ req.title }}</td>
+          <td>{{ req.category }}</td>
+          <td>{{ req.priority }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(req.status)">
+              {{ req.status }}
+            </span>
+          </td>
+          <td>{{ req.createdAt | date:'short' }}</td>
+          <td>
+            <button class="btn btn-sm" [routerLink]="['/requests', req.id]">Details</button>
+          </td>
+        </tr>
+        <tr *ngIf="requests.length === 0 && !isLoading">
+          <td colspan="6" class="text-center">No requests found.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="isLoading" class="loading">Loading...</div>
+  </div>
+</div>

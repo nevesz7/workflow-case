@@ -85,8 +85,8 @@ public class RequestRepository : IRequestRepository
     public async Task<bool> UpdateStatusAsync(Guid id, string status, Guid managerId, string? comment)
     {
         using var connection = new NpgsqlConnection(_connectionString);
-        connection.Open();
-        using var transaction = connection.BeginTransaction();
+        await connection.OpenAsync();
+        using var transaction = await connection.BeginTransactionAsync();
 
         try
         {
@@ -104,8 +104,8 @@ public class RequestRepository : IRequestRepository
             {
                 // 3. Insert History Record
                 var historySql = @"
-                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, Comment)
-                    VALUES (@RequestId, @FromStatus, @ToStatus, @ChangedBy, @Comment)";
+                    INSERT INTO RequestHistory (Id, RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (gen_random_uuid(), @RequestId, @FromStatus, @ToStatus, @ChangedBy, CURRENT_TIMESTAMP, @Comment)";
                 
                 await connection.ExecuteAsync(historySql, new {
                     RequestId = id,
@@ -115,7 +115,7 @@ public class RequestRepository : IRequestRepository
                     Comment = comment
                 }, transaction);
 
-                transaction.Commit();
+                await transaction.CommitAsync();
                 return true;
             }
 
@@ -123,7 +123,7 @@ public class RequestRepository : IRequestRepository
         }
         catch
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw;
         }
     }
