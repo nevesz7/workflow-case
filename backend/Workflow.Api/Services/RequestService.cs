@@ -39,7 +39,7 @@ public class RequestService : IRequestService
             Title = dto.Title,
             Description = dto.Description,
             Category = dto.Category,
-            Priority = Enum.Parse<RequestPriority>(dto.Priority),
+            Priority = Enum.Parse<RequestPriority>(dto.Priority, true),
             Status = RequestStatus.Pending, // Workflow: Sempre inicia como Pending
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
@@ -72,8 +72,12 @@ public class RequestService : IRequestService
         return await _repository.UpdateStatusAsync(id, "Rejected", managerId, dto.Comment);
     }
 
-    public async Task<IEnumerable<RequestHistoryDto>> GetHistoryAsync(Guid requestId)
+    public async Task<IEnumerable<RequestHistoryDto>?> GetHistoryAsync(Guid requestId, Guid userId, string role)
     {
+        // Security Check: Reuse GetById logic to ensure User owns the request or is Manager
+        var request = await GetByIdAsync(requestId, userId, role);
+        if (request == null) return null;
+
         return await _repository.GetHistoryAsync(requestId);
     }
 }

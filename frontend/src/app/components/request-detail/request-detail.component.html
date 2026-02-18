@@ -1,0 +1,82 @@
+<div class="container" *ngIf="request; else loading">
+  <div class="header">
+    <h2>Request Details</h2>
+    <button class="btn btn-secondary" routerLink="/requests">Back to List</button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="col">
+        <strong>Title:</strong> {{ request.title }}
+      </div>
+      <div class="col">
+        <strong>Status:</strong> 
+        <span class="status-badge" [ngClass]="getStatusClass(request.status)">{{ request.status }}</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <strong>Category:</strong> {{ request.category }}
+      </div>
+      <div class="col">
+        <strong>Priority:</strong> {{ request.priority }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <strong>Created At:</strong> {{ request.createdAt | date:'medium' }}
+      </div>
+    </div>
+    <div class="row description">
+      <strong>Description:</strong>
+      <p>{{ request.description }}</p>
+    </div>
+  </div>
+
+  <!-- Manager Actions -->
+  <div class="actions-card" *ngIf="currentUser?.role === 'Manager' && request.status === 'Pending'">
+    <h3>Manager Actions</h3>
+    <div class="form-group">
+      <label for="comment">Comment (Optional for Approve, Required for Reject):</label>
+      <textarea id="comment" [(ngModel)]="comment" class="form-control" rows="3"></textarea>
+    </div>
+    <div *ngIf="actionError" class="error-message">{{ actionError }}</div>
+    <div class="buttons">
+      <button class="btn btn-success" (click)="approve()">Approve</button>
+      <button class="btn btn-danger" (click)="reject()">Reject</button>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section">
+    <h3>History / Timeline</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Action By</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of history">
+          <td>{{ item.changedAt | date:'medium' }}</td>
+          <td>{{ item.changedByName }}</td>
+          <td>{{ item.fromStatus || '-' }}</td>
+          <td>{{ item.toStatus }}</td>
+          <td>{{ item.comment }}</td>
+        </tr>
+        <tr *ngIf="history.length === 0">
+          <td colspan="5">No history available.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div *ngIf="loadError" class="loading error-message">{{ loadError }}</div>
+  <div *ngIf="!loadError" class="loading">Loading details...</div>
+</ng-template>
