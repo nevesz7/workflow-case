@@ -77,5 +77,6 @@
 </div>
 
 <ng-template #loading>
-  <div class="loading">Loading details...</div>
+  <div *ngIf="loadError" class="loading error-message">{{ loadError }}</div>
+  <div *ngIf="!loadError" class="loading">Loading details...</div>
 </ng-template>

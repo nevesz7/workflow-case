@@ -6,7 +6,16 @@ acessos, reembolsos, demandas de TI) e permitir que gestores aprovem ou reprovem
 solicitações. 
 O objetivo é entregar um MVP funcional, com autenticação e autorização, e um fluxo claro de estados 
 (workflow). 
-  
+
+graph TD
+    A[User faz login] --> B[User cria solicitação]
+    B --> C{Solicitacao fica PENDING}
+    C --> D[Manager visualiza pendentes]
+    D --> E{Decisao}
+    E -- Aprova --> F[Status = APPROVED]
+    E -- Reprova --> G[Status = REJECTED]
+    F --> H[User e Manager veem aprovadas]
+    G --> I[User e Manager veem rejeitadas]
  
 Este desafio será implementado end-to-end: 
 • Front-end: Angular 

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Dapper;
+using BCrypt.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -30,7 +31,7 @@ public class AuthController : ControllerBase
         var sql = "SELECT * FROM Users WHERE Username = @Username";
         var user = await connection.QueryFirstOrDefaultAsync<User>(sql, new { login.Username });
 
-        if (user == null || user.PasswordHash != login.Password)
+        if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
         {
             return Unauthorized("Invalid username or password.");
         }

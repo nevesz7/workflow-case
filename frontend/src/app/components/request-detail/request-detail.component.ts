@@ -16,6 +16,7 @@ export class RequestDetailComponent implements OnInit {
   isLoading = true;
   comment: string = '';
   actionError: string = '';
+  loadError: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -44,6 +45,7 @@ export class RequestDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error loading request', err);
         this.isLoading = false;
+        this.loadError = 'Failed to load request details. Please try again later.';
       }
     });
   }

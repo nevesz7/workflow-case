@@ -1,5 +1,6 @@
 using Dapper;
 using Npgsql;
+using BCrypt.Net;
 
 namespace Workflow.Api.Data;
 
@@ -62,13 +63,19 @@ public static class DbConfig
         if (!userExists)
         {
             var userSql = @"
-                INSERT INTO Users (Username, PasswordHash, Role) VALUES 
-                ('colaborador_comum', 'hash_senha_123', 'User'),
-                ('ana_silva', 'senha_user_2', 'User'),
-                ('joao_santos', 'senha_user_3', 'User'),
-                ('gerente_sistema', 'hash_senha_456', 'Manager'),
-                ('mariana_gerente', 'senha_manager_2', 'Manager');";
-            connection.Execute(userSql);
+                INSERT INTO Users (Username, PasswordHash, Role) VALUES
+                ('User1', @HashedPassword1, 'User'),
+                ('User2', @HashedPassword2, 'User'),
+                ('User3', @HashedPassword3, 'User'),
+                ('Manager1', @AdminPassword1, 'Manager'),
+                ('Manager2', @AdminPassword2, 'Manager');";
+            connection.Execute(userSql, new {
+                HashedPassword1 = BCrypt.Net.BCrypt.HashPassword("HashedPassword1word"),
+                HashedPassword2 = BCrypt.Net.BCrypt.HashPassword("HashedPassword2test"),
+                HashedPassword3 = BCrypt.Net.BCrypt.HashPassword("HashedPassword3user"),
+                AdminPassword1 = BCrypt.Net.BCrypt.HashPassword("AdminPassword1deal"),
+                AdminPassword2 = BCrypt.Net.BCrypt.HashPassword("AdminPassword2maker")
+            });
         }
 
         var requestExists = connection.ExecuteScalar<bool>("SELECT EXISTS (SELECT 1 FROM Requests LIMIT 1)");
@@ -77,66 +84,61 @@ public static class DbConfig
             var requestSql = @"
                 DO $$
                 DECLARE
-                    v_user_colab UUID;
-                    v_user_ana UUID;
-                    v_user_joao UUID;
-                    v_manager UUID;
+                    v_user_1 UUID;
+                    v_user_2 UUID;
+                    v_user_3 UUID;
+                    v_manager_1 UUID;
+                    v_manager_2 UUID;
                     v_req_id UUID;
                 BEGIN
-                    SELECT Id INTO v_user_colab FROM Users WHERE Username = 'colaborador_comum';
-                    SELECT Id INTO v_user_ana FROM Users WHERE Username = 'ana_silva';
-                    SELECT Id INTO v_user_joao FROM Users WHERE Username = 'joao_santos';
-                    SELECT Id INTO v_manager FROM Users WHERE Username = 'gerente_sistema';
+                    SELECT Id INTO v_user_1 FROM Users WHERE Username = 'User1';
+                    SELECT Id INTO v_user_2 FROM Users WHERE Username = 'User2';
+                    SELECT Id INTO v_user_3 FROM Users WHERE Username = 'User3';
+                    SELECT Id INTO v_manager_1 FROM Users WHERE Username = 'Manager1';
+                    SELECT Id INTO v_manager_2 FROM Users WHERE Username = 'Manager2';
 
-                    -- 1. Impressora
                     INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
-                    VALUES ('Impressora com defeito', 'A impressora do 2º andar está atolando papel.', 'Hardware', 'Medium', 'Pending', v_user_colab)
+                    VALUES ('Compras 1 - User 1', 'Description Medium Compras 1', 'Compras', 'Medium', 'Pending', v_user_1)
                     RETURNING Id INTO v_req_id;
                     
                     INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, NULL, 'Pending', v_user_colab, NOW(), 'Solicitação criada via seed.');
+                    VALUES (v_req_id, NULL, 'Pending', v_user_1, NOW(), 'Solicitação criada via seed.');
 
-                    -- 2. VPN
                     INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId, CreatedAt, UpdatedAt) 
-                    VALUES ('Acesso VPN', 'Solicito acesso à VPN para trabalho remoto.', 'Acesso', 'High', 'Rejected', v_user_ana, NOW() - INTERVAL '1 day', NOW())
+                    VALUES ('TI 1 - User 2', 'Description High TI 1', 'TI', 'High', 'Rejected', v_user_2, NOW() - INTERVAL '1 day', NOW())
+                    RETURNING Id INTO v_req_id;
+
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_2, NOW() - INTERVAL '1 day', 'Solicitação criada via seed.');
+
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, 'Pending', 'Rejected', v_manager_2, NOW(), 'Rejected - Manager 2');
+
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
+                    VALUES ('Reembolso 1 - User 3', 'Description Low Reembolso 1', 'Reembolso', 'Low', 'Pending', v_user_3)
+                    RETURNING Id INTO v_req_id;
+
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_3, NOW(), 'Solicitação criada via seed.');
+
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
+                    VALUES ('Outros 1 - User 1', 'Description High Outros 1', 'Outros', 'High', 'Pending', v_user_1)
+                    RETURNING Id INTO v_req_id;
+
+                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
+                    VALUES (v_req_id, NULL, 'Pending', v_user_1, NOW(), 'Solicitação criada via seed.');
+
+                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId, CreatedAt, UpdatedAt) 
+                    VALUES ('Outros 2 - User 2', 'Description Medium Outros 2', 'Outros', 'Medium', 'Approved', v_user_2, NOW() - INTERVAL '2 days', NOW())
                     RETURNING Id INTO v_req_id;
 
                     -- History 1: Creation (User)
                     INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, NULL, 'Pending', v_user_ana, NOW() - INTERVAL '1 day', 'Solicitação criada via seed.');
+                    VALUES (v_req_id, NULL, 'Pending', v_user_2, NOW() - INTERVAL '2 days', 'Solicitação criada via seed.');
 
                     -- History 2: Update (Manager)
                     INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, 'Pending', 'Rejected', v_manager, NOW(), 'Rejeitado pelo gerente.');
-
-                    -- 3. Monitor
-                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
-                    VALUES ('Monitor piscando', 'O monitor secundário apaga de vez em quando.', 'Hardware', 'Low', 'Pending', v_user_joao)
-                    RETURNING Id INTO v_req_id;
-
-                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, NULL, 'Pending', v_user_joao, NOW(), 'Solicitação criada via seed.');
-
-                    -- 4. ERP
-                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId) 
-                    VALUES ('Erro no sistema ERP', 'Erro 500 ao tentar gerar relatório mensal.', 'Software', 'High', 'Pending', v_user_colab)
-                    RETURNING Id INTO v_req_id;
-
-                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, NULL, 'Pending', v_user_colab, NOW(), 'Solicitação criada via seed.');
-
-                    -- 5. Docker
-                    INSERT INTO Requests (Title, Description, Category, Priority, Status, UserId, CreatedAt, UpdatedAt) 
-                    VALUES ('Instalação do Docker', 'Preciso do Docker instalado para o novo projeto.', 'Software', 'Medium', 'Approved', v_user_ana, NOW() - INTERVAL '2 days', NOW())
-                    RETURNING Id INTO v_req_id;
-
-                    -- History 1: Creation (User)
-                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, NULL, 'Pending', v_user_ana, NOW() - INTERVAL '2 days', 'Solicitação criada via seed.');
-
-                    -- History 2: Update (Manager)
-                    INSERT INTO RequestHistory (RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
-                    VALUES (v_req_id, 'Pending', 'Approved', v_manager, NOW(), 'Aprovado pelo gerente.');
+                    VALUES (v_req_id, 'Pending', 'Approved', v_manager_1, NOW(), 'Approved - Manager 1');
                 END $$;";
             
             connection.Execute(requestSql);

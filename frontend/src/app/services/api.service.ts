@@ -9,13 +9,14 @@ import {
   RequestHistoryDto,
   DecisionDto
 } from '../models/api.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   // Adjust this URL to your backend's address
-  private readonly apiUrl = 'http://172.17.231.240:5166/api';
+  private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 

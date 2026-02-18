@@ -8,6 +8,9 @@ using Workflow.Api.Models;
 using Workflow.Api.Repositories;
 using Workflow.Api.Services;
 
+// Carrega as variáveis de ambiente do arquivo .env
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
