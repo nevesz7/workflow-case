@@ -9,5 +9,5 @@ public interface IRequestService
     Task<RequestResponseDto> CreateAsync(CreateRequestDto dto, Guid userId);
     Task<bool> ApproveAsync(Guid id, Guid managerId, DecisionDto dto);
     Task<bool> RejectAsync(Guid id, Guid managerId, DecisionDto dto);
-    Task<IEnumerable<RequestHistoryDto>> GetHistoryAsync(Guid requestId);
+    Task<IEnumerable<RequestHistoryDto>?> GetHistoryAsync(Guid requestId, Guid userId, string role);
 }

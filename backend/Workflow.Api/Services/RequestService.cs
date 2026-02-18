@@ -72,8 +72,12 @@ public class RequestService : IRequestService
         return await _repository.UpdateStatusAsync(id, "Rejected", managerId, dto.Comment);
     }
 
-    public async Task<IEnumerable<RequestHistoryDto>> GetHistoryAsync(Guid requestId)
+    public async Task<IEnumerable<RequestHistoryDto>?> GetHistoryAsync(Guid requestId, Guid userId, string role)
     {
+        // Security Check: Reuse GetById logic to ensure User owns the request or is Manager
+        var request = await GetByIdAsync(requestId, userId, role);
+        if (request == null) return null;
+
         return await _repository.GetHistoryAsync(requestId);
     }
 }
