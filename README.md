@@ -38,6 +38,7 @@ O backend usa um arquivo `.env` para gerenciar a string de conexão do banco de 
 **a. Gere o arquivo `.env`:**
 Na raiz do projeto, execute o script de setup:
 ```bash
+chmod +x setup-env.sh
 ./setup-env.sh
 ```
 Isso criará um arquivo `.env` dentro de `backend/Workflow.Api/` com a string de conexão padrão.
