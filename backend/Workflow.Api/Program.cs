@@ -8,12 +8,10 @@ using Workflow.Api.Models;
 using Workflow.Api.Repositories;
 using Workflow.Api.Services;
 
-// Carrega as variáveis de ambiente do arquivo .env
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
@@ -24,18 +22,14 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
-// Register Dapper Type Handlers to save Enums as Strings
 SqlMapper.AddTypeHandler(new StringEnumHandler<UserRole>());
 SqlMapper.AddTypeHandler(new StringEnumHandler<RequestPriority>());
 SqlMapper.AddTypeHandler(new StringEnumHandler<RequestStatus>());
 
-// Register Services
 builder.Services.AddScoped<IRequestRepository, RequestRepository>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 
-// Configure JWT Authentication
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? "super_secret_key_for_dev_1234567890");
-
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -68,7 +62,7 @@ catch (Exception ex)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 app.UseCors("AllowAngularApp");
 // app.UseHttpsRedirection();
 app.UseAuthentication();

@@ -13,6 +13,7 @@ export class LoginComponent {
     password: ''
   };
   errorMessage: string = '';
+  isLoading = false;
 
   constructor(private authService: AuthService) {}
 
@@ -22,8 +23,12 @@ export class LoginComponent {
       return;
     }
     
+    this.isLoading = true;
+    this.errorMessage = '';
+
     this.authService.login(this.credentials).subscribe({
       error: (err) => {
+        this.isLoading = false;
         console.error('Login failed', err);
         if (err.status === 0) {
           this.errorMessage = 'Connection refused. Is the backend running? Check API URL.';
