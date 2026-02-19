@@ -15,17 +15,14 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class ApiService {
-  // Adjust this URL to your backend's address
   private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
-  // --- Auth ---
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials);
   }
 
-  // --- Requests ---
   getRequests(status?: string): Observable<RequestResponseDto[]> {
     let params = new HttpParams();
     if (status) {

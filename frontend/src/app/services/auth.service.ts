@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { jwtDecode } from 'jwt-decode'; // npm install jwt-decode
+import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
 import { LoginRequest, LoginResponse } from '../models/api.models';
 
@@ -32,14 +32,13 @@ export class AuthService {
     if (token) {
       try {
         const decodedUser = jwtDecode<User>(token);
-        // Check if token is expired
         if (decodedUser.exp * 1000 > Date.now()) {
           this.currentUserSubject.next(decodedUser);
         } else {
-          this.logout(); // Token is expired, clear session
+          this.logout(); 
         }
       } catch (error) {
-        this.logout(); // Invalid token
+        this.logout();
       }
     }
   }
