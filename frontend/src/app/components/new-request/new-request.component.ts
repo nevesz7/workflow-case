@@ -12,8 +12,8 @@ export class NewRequestComponent {
   request: CreateRequestDto = {
     title: '',
     description: '',
-    category: 'TI', // Default value
-    priority: 'Medium' // Default value
+    category: 'TI',
+    priority: 'Medium'
   };
   errorMessage: string = '';
   isLoading: boolean = false;

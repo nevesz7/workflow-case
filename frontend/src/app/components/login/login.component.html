@@ -23,7 +23,10 @@
         class="form-control"
       />
     </div>
-    <button type="submit" [disabled]="!loginForm.form.valid" class="btn btn-primary">Login</button>
+    <button type="submit" [disabled]="!loginForm.form.valid || isLoading" class="btn btn-primary">
+      <span *ngIf="isLoading" class="spinner"></span>
+      <span>{{ isLoading ? 'Logging in...' : 'Login' }}</span>
+    </button>
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>

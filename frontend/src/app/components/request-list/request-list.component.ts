@@ -28,7 +28,6 @@ export class RequestListComponent implements OnInit {
 
   loadRequests(): void {
     this.isLoading = true;
-    // If statusFilter is empty string, pass undefined to get all
     const status = this.statusFilter || undefined;
     
     this.apiService.getRequests(status).subscribe({

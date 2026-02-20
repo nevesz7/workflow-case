@@ -10,11 +10,11 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   {
     path: 'requests',
-    canActivate: [AuthGuard], // Apply guard once to the parent
+    canActivate: [AuthGuard], 
     children: [
-      { path: '', component: RequestListComponent }, // Matches /requests
-      { path: 'new', component: NewRequestComponent }, // Matches /requests/new
-      { path: ':id', component: RequestDetailComponent } // Matches /requests/some-id
+      { path: '', component: RequestListComponent }, 
+      { path: 'new', component: NewRequestComponent }, 
+      { path: ':id', component: RequestDetailComponent } 
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' }

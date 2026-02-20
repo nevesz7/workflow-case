@@ -15,7 +15,6 @@ public class RequestService : IRequestService
 
     public async Task<IEnumerable<RequestResponseDto>> GetAllAsync(Guid userId, string role, string? status)
     {
-        // Manager vê tudo, User vê apenas o dele
         var filterUserId = role == "Manager" ? null : (Guid?)userId;
         return await _repository.GetRequestsAsync(filterUserId, status);
     }
@@ -25,7 +24,6 @@ public class RequestService : IRequestService
         var request = await _repository.GetByIdAsync(id);
         if (request == null) return null;
 
-        // Segurança: Se não for manager e não for o dono, bloqueia
         if (role != "Manager" && request.UserId != userId) return null;
 
         return request;
@@ -53,8 +51,7 @@ public class RequestService : IRequestService
     public async Task<bool> ApproveAsync(Guid id, Guid managerId, DecisionDto dto)
     {
         var request = await _repository.GetByIdAsync(id);
-        
-        // Regra: Apenas Pending pode ser aprovado
+
         if (request == null || request.Status != "Pending") return false;
 
         return await _repository.UpdateStatusAsync(id, "Approved", managerId, dto.Comment);
@@ -62,7 +59,6 @@ public class RequestService : IRequestService
 
     public async Task<bool> RejectAsync(Guid id, Guid managerId, DecisionDto dto)
     {
-        // Regra de Negócio: Comentário obrigatório para Reprovar
         if (string.IsNullOrWhiteSpace(dto.Comment))
             throw new ArgumentException("O comentário é obrigatório para rejeitar uma solicitação.");
 
@@ -74,7 +70,6 @@ public class RequestService : IRequestService
 
     public async Task<IEnumerable<RequestHistoryDto>?> GetHistoryAsync(Guid requestId, Guid userId, string role)
     {
-        // Security Check: Reuse GetById logic to ensure User owns the request or is Manager
         var request = await GetByIdAsync(requestId, userId, role);
         if (request == null) return null;
 

@@ -90,19 +90,16 @@ public class RequestRepository : IRequestRepository
 
         try
         {
-            // 1. Get current status for history
             var currentStatus = await connection.QueryFirstOrDefaultAsync<string>(
                 "SELECT Status FROM Requests WHERE Id = @Id", new { Id = id }, transaction);
 
             if (currentStatus == null) return false;
 
-            // 2. Update Request Status
             var updateSql = "UPDATE Requests SET Status = @Status, UpdatedAt = CURRENT_TIMESTAMP WHERE Id = @Id";
             var rows = await connection.ExecuteAsync(updateSql, new { Id = id, Status = status }, transaction);
 
             if (rows > 0)
             {
-                // 3. Insert History Record
                 var historySql = @"
                     INSERT INTO RequestHistory (Id, RequestId, FromStatus, ToStatus, ChangedBy, ChangedAt, Comment)
                     VALUES (gen_random_uuid(), @RequestId, @FromStatus, @ToStatus, @ChangedBy, CURRENT_TIMESTAMP, @Comment)";

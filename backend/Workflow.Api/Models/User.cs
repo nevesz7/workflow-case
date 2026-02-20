@@ -6,6 +6,5 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     
-    // Pode ser 'User' ou 'Manager'
     public string Role { get; set; } = "User";
 }
